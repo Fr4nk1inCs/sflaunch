@@ -1,0 +1,26 @@
+[project]
+name = "sfutils"
+version = "0.1.0"
+description = "Utilities for LLM system research and development."
+readme = "README.md"
+authors = [{ name = "Fr4nk1in", email = "fushen@mail.ustc.edu.cn" }]
+requires-python = ">=3.12"
+dependencies = [
+  "libtmux>=0.53.0",
+  "pydantic>=2.12.5",
+  "pydantic-settings>=2.12.0",
+  "pyyaml>=6.0.3",
+]
+
+[project.scripts]
+sfmegarun = "sfutils.runners.megarun:main"
+
+[build-system]
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["pre-commit>=4.5.1"]
+
+[tool.uv.sources]
+sfutils = { path = ".", editable = true }

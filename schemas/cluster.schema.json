@@ -1,0 +1,79 @@
+{
+    "$defs": {
+        "Node": {
+            "properties": {
+                "ip_addr": {
+                    "description": "IP address of the node for inter-node communication",
+                    "format": "ipvanyaddress",
+                    "title": "Ip Addr",
+                    "type": "string"
+                },
+                "ssh_target": {
+                    "description": "SSH target (address or hostname) for connecting to the node",
+                    "title": "Ssh Target",
+                    "type": "string"
+                },
+                "num_gpus": {
+                    "default": 8,
+                    "description": "Number of GPUs available on this node",
+                    "title": "Num Gpus",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "ip_addr"
+            ],
+            "title": "Node",
+            "type": "object"
+        }
+    },
+    "properties": {
+        "nodes": {
+            "description": "List of nodes participating in the distributed job",
+            "items": {
+                "$ref": "#/$defs/Node"
+            },
+            "title": "Nodes",
+            "type": "array"
+        },
+        "working_dir": {
+            "description": "Working directory on each node where the job will be executed",
+            "format": "directory-path",
+            "title": "Working Dir",
+            "type": "string"
+        },
+        "env_setup": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "description": "Command to activate the environment (e.g., source venv/bin/activate)",
+            "title": "Env Setup"
+        },
+        "output_dir": {
+            "description": "Base directory to store logs/scripts/config from the job. The final directory will be output_dir/name/date/time",
+            "format": "directory-path",
+            "title": "Output Dir",
+            "type": "string"
+        },
+        "script": {
+            "description": "Path to the script to be executed",
+            "format": "file-path",
+            "title": "Script",
+            "type": "string"
+        }
+    },
+    "required": [
+        "nodes",
+        "working_dir",
+        "output_dir",
+        "script"
+    ],
+    "title": "ClusterConfig",
+    "type": "object"
+}
