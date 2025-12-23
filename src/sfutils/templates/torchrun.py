@@ -25,8 +25,6 @@ SCRIPT_TEMPLATE = Template(
             --master_port=${master_port} \\
             ${command} \\
             2>&1 | tee ${log_dir}/node-${_NODE_RANK}.log
-
-        read -n 1 -s -r -p "Press any key to continue"
         """
     ).strip()
 )

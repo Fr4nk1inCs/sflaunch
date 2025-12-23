@@ -18,7 +18,10 @@ class Launcher(Protocol):
 
 
 def tmux_launcher(command: str, rank: int, *, session: Session) -> None:
-    window = session.new_window(attach=False, window_shell=command)
+    run_and_persist = (
+        f"{command} {rank}; bash -c \"read -n 1 -s -r -p 'Press any key to exit...'\""
+    )
+    window = session.new_window(attach=False, window_shell=run_and_persist)
     window.rename_window(f"rank-{rank}")
 
 
