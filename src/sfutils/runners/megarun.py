@@ -134,7 +134,11 @@ class CliArgs(BaseCliArgs):
                 f"ssh -t {node.ssh_target} -- bash {script_path.absolute().as_posix()}"
             )
             logger.info(
-                "Launching rank %d on node %s: %s", rank, node.ssh_target, command
+                "Launching rank %d on node %s: %s %d",
+                rank,
+                node.ssh_target,
+                command,
+                rank,
             )
             launcher(command, rank)
 
