@@ -117,7 +117,7 @@ class CliArgs(BaseCliArgs):
                 f"Failed to load megatron config from {self.pretrain}"
             ) from e
 
-        output_dir = OutputDirectory.make(cluster.output_dir)
+        output_dir = OutputDirectory.make(cluster.output_dir / megatron_job.name)
 
         config = {
             "cluster": cluster.model_dump(mode="json"),
