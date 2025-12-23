@@ -5,7 +5,8 @@ _LOGGING_SETUP: bool = False
 
 def setup_logging(level: int | str | None = None) -> None:
     logging.basicConfig(
-        format="%(asctime)s [%(levelname)5s] %(message)s",
+        format="%(asctime)s | %(levelname)7s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
         level=level or logging.INFO,
         force=True,
     )
