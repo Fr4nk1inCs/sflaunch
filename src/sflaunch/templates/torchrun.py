@@ -4,7 +4,7 @@ from typing import Dict, List, TypedDict, Unpack
 
 from pydantic.types import DirectoryPath, FilePath
 
-from sfutils.utils.formatters import argv2cmd, fmt_env_vars
+from sflaunch.utils.formatters import argv2cmd, fmt_env_vars
 
 SCRIPT_TEMPLATE = Template(
     dedent(

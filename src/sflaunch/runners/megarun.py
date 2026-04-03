@@ -8,13 +8,13 @@ from pydantic.functional_validators import model_validator
 from pydantic.types import FilePath, PositiveInt
 from pydantic_settings import CliApp
 
-from sfutils.launchers import join_launched, make_launcher
-from sfutils.schemas.cli_args import BaseCliArgs
-from sfutils.schemas.cluster import ClusterConfig
-from sfutils.schemas.jobs.megatron import MegatronJob
-from sfutils.templates.torchrun import render_script as render_torchrun_script
-from sfutils.utils import OutputDirectory
-from sfutils.utils.log import get_logger, setup_logging
+from sflaunch.launchers import join_launched, make_launcher
+from sflaunch.schemas.cli_args import BaseCliArgs
+from sflaunch.schemas.cluster import ClusterConfig
+from sflaunch.schemas.jobs.megatron import MegatronJob
+from sflaunch.templates.torchrun import render_script as render_torchrun_script
+from sflaunch.utils import OutputDirectory
+from sflaunch.utils.log import get_logger, setup_logging
 
 _M = TypeVar("_M", bound=BaseModel)
 

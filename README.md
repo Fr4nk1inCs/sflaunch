@@ -1,21 +1,21 @@
-# sfutils
+# sflaunch
 
 Utilities for LLM system research and development.
 
 ## Installation
 
 ```bash
-pip install sfutils
+pip install sflaunch
 ```
 
-## sfmegarun
+## sf-megarun
 
-`sfmegarun` launches a distributed [Megatron-LM](https://github.com/NVIDIA/Megatron-LM) training job across multiple nodes over SSH. It renders a `torchrun` launch script, saves it alongside a config snapshot to a timestamped output directory, then SSHes into each node to execute it.
+`sf-megarun` launches a distributed [Megatron-LM](https://github.com/NVIDIA/Megatron-LM) training job across multiple nodes over SSH. It renders a `torchrun` launch script, saves it alongside a config snapshot to a timestamped output directory, then SSHes into each node to execute it.
 
 ### Usage
 
 ```bash
-sfmegarun --cluster cluster.yaml --pretrain megatron.yaml
+sf-megarun --cluster cluster.yaml --pretrain megatron.yaml
 ```
 
 | Flag | Short | Default | Description |

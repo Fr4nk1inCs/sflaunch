@@ -1,5 +1,5 @@
 [project]
-name = "sfutils"
+name = "sflaunch"
 version = "0.1.0"
 description = "Utilities for LLM system research and development."
 readme = "README.md"
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-sfmegarun = "sfutils.runners.megarun:main"
+sf-megarun = "sflaunch.runners.megarun:main"
 
 [build-system]
 requires = ["uv_build>=0.9.18,<0.10.0"]
@@ -23,4 +23,4 @@ build-backend = "uv_build"
 dev = ["pre-commit>=4.5.1"]
 
 [tool.uv.sources]
-sfutils = { path = ".", editable = true }
+sflaunch = { path = ".", editable = true }

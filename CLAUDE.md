@@ -28,7 +28,7 @@ uv run python scripts/generate_schemas.py --output <dir>
 
 ## Architecture
 
-The sole implemented runner is `sfmegarun` (`src/sfutils/runners/megarun.py`). Its flow:
+The sole implemented runner is `sfmegarun` (`src/sflaunch/runners/megarun.py`). Its flow:
 
 1. **Parse CLI args** (`CliArgs` extends `BaseCliArgs`) — accepts cluster and megatron job YAML paths, optional `--nnodes`/`--nproc-per-node` overrides, `--port`, and `--tmux`/`--no-tmux`.
 2. **Load configs** — `ClusterConfig` (`schemas/cluster.py`) describes nodes (IP, SSH target, GPU count), working dir, env setup command, output dir, and script path. `MegatronJob` (`schemas/jobs/megatron.py` → `CliBasedJob`) holds job name, env vars, and `argv` (CLI args for the training script).

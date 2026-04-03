@@ -4,7 +4,7 @@ from typing import Optional
 from libtmux import Server, Session
 from libtmux._internal.query_list import MultipleObjectsReturned, ObjectDoesNotExist
 
-from sfutils.utils.log import get_logger
+from sflaunch.utils.log import get_logger
 
 logger = get_logger(__name__)
 

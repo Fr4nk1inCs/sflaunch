@@ -5,7 +5,7 @@ from typing import Any, Dict
 import yaml
 from pydantic.types import DirectoryPath, FilePath
 
-from sfutils.utils.log import get_logger
+from sflaunch.utils.log import get_logger
 
 logger = get_logger(__name__)
 

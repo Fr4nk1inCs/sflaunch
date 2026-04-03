@@ -5,8 +5,8 @@ from typing import List, Protocol
 
 from libtmux import Session
 
-from sfutils.utils.log import get_logger
-from sfutils.utils.tmux import get_session
+from sflaunch.utils.log import get_logger
+from sflaunch.utils.tmux import get_session
 
 logger = get_logger(__name__)
 

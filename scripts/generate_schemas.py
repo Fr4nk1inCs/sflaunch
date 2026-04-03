@@ -5,8 +5,8 @@ from pydantic.fields import Field
 from pydantic.types import DirectoryPath
 from pydantic_settings import BaseSettings
 
-from sfutils.schemas.cluster import ClusterConfig
-from sfutils.schemas.jobs.megatron import MegatronJob
+from sflaunch.schemas.cluster import ClusterConfig
+from sflaunch.schemas.jobs.megatron import MegatronJob
 
 MAPPING = {
     "cluster": ClusterConfig,
