@@ -1,6 +1,6 @@
 [project]
 name = "sflaunch"
-version = "0.1.0"
+version = "0.1.1"
 description = "Utilities for LLM system research and development."
 readme = "README.md"
 authors = [{ name = "Fr4nk1in", email = "fushen@mail.ustc.edu.cn" }]
