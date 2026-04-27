@@ -1,22 +1,24 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.networks import IPvAnyAddress
-from pydantic.types import DirectoryPath, FilePath
+from pydantic.types import DirectoryPath, FilePath, PositiveInt
 
 
 class Node(BaseModel):
+    model_config = ConfigDict(validate_assignment=True)
+
     ip_addr: IPvAnyAddress = Field(
         ...,
         description="IP address of the node for inter-node communication",
     )
 
     ssh_target: str = Field(
-        default_factory=lambda data: data["ip_addr"],
+        default_factory=lambda data: str(data["ip_addr"]),
         description="SSH target (address or hostname) for connecting to the node",
     )
 
-    num_gpus: int = Field(
+    num_gpus: PositiveInt = Field(
         8,
         description="Number of GPUs available on this node",
     )

@@ -1,3 +1,5 @@
+import random
+import shlex
 from typing import Optional, Self, TypeVar
 
 import yaml
@@ -15,6 +17,12 @@ from sflaunch.schemas.jobs.megatron import MegatronJob
 from sflaunch.templates.torchrun import render_script as render_torchrun_script
 from sflaunch.utils import OutputDirectory
 from sflaunch.utils.log import get_logger, setup_logging
+from sflaunch.utils.tmux import get_session
+
+
+def _build_ssh_command(ssh_target: str, script_path: str) -> str:
+    return f"< {shlex.quote(script_path)} ssh {shlex.quote(ssh_target)} -- bash -s --"
+
 
 _M = TypeVar("_M", bound=BaseModel)
 
@@ -34,6 +42,14 @@ def render_script(
     output_dir: OutputDirectory,
     master_port: int,
 ) -> str:
+    gpu_counts = {node.num_gpus for node in cluster.nodes}
+    if len(gpu_counts) > 1:
+        raise ValueError(
+            f"Heterogeneous num_gpus across nodes ({sorted(gpu_counts)}); "
+            "torchrun requires a uniform --nproc_per_node. "
+            "Pass --nproc-per-node to pin a value."
+        )
+
     return render_torchrun_script(
         env_vars=job.env,
         script=cluster.script,
@@ -42,7 +58,7 @@ def render_script(
         log_dir=output_dir.base,
         env_setup=cluster.env_setup or "",
         nnodes=len(cluster.nodes),
-        nproc_per_node=min(node.num_gpus for node in cluster.nodes),
+        nproc_per_node=gpu_counts.pop(),
         master_addr=cluster.nodes[0].ip_addr.exploded,
         master_port=master_port,
     )
@@ -56,12 +72,15 @@ class CliArgs(BaseCliArgs):
 
     nproc_per_node: Optional[PositiveInt] = Field(
         None,
-        description="`--nproc_per_node` passed to torchrun, overrides cluster config",
+        description="`--nproc-per-node` passed to torchrun, overrides cluster config",
     )
 
-    port: PositiveInt = Field(
-        29500,
-        description="Port for master node communication",
+    port: int = Field(
+        default_factory=lambda: random.randint(30000, 49999),
+        ge=1,
+        le=65535,
+        description="Port for master node communication "
+        "(random in [30000, 49999] by default to avoid collisions)",
     )
 
     cluster: FilePath = Field(
@@ -76,27 +95,33 @@ class CliArgs(BaseCliArgs):
         description="Path to the megatron configuration file (YAML)",
     )
 
-    try_use_tmux: bool = Field(
-        True,
-        validation_alias=AliasChoices("tmux", "try-use-tmux"),
-        description="Whether to attach to current tmux session when running the script",
+    tmux: bool = Field(
+        default_factory=lambda: get_session() is not None,
+        description="Whether to attach to current tmux session when running the script "
+        "(defaults to True iff invoked from inside a tmux session)",
     )
 
     daemon: bool = Field(
-        default_factory=lambda data: not data["try_use_tmux"],
+        False,
         description="Whether to run launched processes as daemons (only if not using tmux)",
     )
 
     @model_validator(mode="after")
     def check_tmux_daemon(self) -> Self:
-        if self.try_use_tmux and self.daemon:
-            raise ValueError("Cannot use daemon mode when try_use_tmux is True")
+        if self.tmux and self.daemon:
+            raise ValueError("Cannot use --daemon together with --tmux")
+        if self.tmux and get_session() is None:
+            raise ValueError(
+                "--tmux requested but no tmux session detected "
+                "(env var TMUX is unset). Run sf-megarun from inside tmux, "
+                "or pass --no-tmux."
+            )
         return self
 
     def cli_cmd(self) -> None:
         setup_logging(self.log_level)
 
-        logger.debug("Lauching megarun with args: %s", self.model_dump())
+        logger.debug("Launching megarun with args: %s", self.model_dump())
 
         try:
             cluster = load_model(self.cluster, ClusterConfig)
@@ -128,10 +153,10 @@ class CliArgs(BaseCliArgs):
         output_dir.write_config(config)
         script_path = output_dir.write_script(script_content)
 
-        launcher = make_launcher(self.try_use_tmux, self.daemon)
+        launcher = make_launcher(self.tmux, self.daemon)
         for rank, node in enumerate(cluster.nodes):
-            command = (
-                f"ssh -t {node.ssh_target} -- bash {script_path.absolute().as_posix()}"
+            command = _build_ssh_command(
+                node.ssh_target, script_path.absolute().as_posix()
             )
             logger.info(
                 "Launching rank %d on node %s: %s %d",
@@ -152,7 +177,15 @@ class CliArgs(BaseCliArgs):
                     f"available nodes in config ({len(config.nodes)})"
                 )
 
-            config.nodes = config.nodes[: self.nnodes]
+            if len(config.nodes) > self.nnodes:
+                dropped = [n.ssh_target for n in config.nodes[self.nnodes :]]
+                logger.warning(
+                    "Using first %d of %d configured nodes; dropping: %s",
+                    self.nnodes,
+                    len(config.nodes),
+                    dropped,
+                )
+                config.nodes = config.nodes[: self.nnodes]
 
         if self.nproc_per_node is not None:
             for node in config.nodes:

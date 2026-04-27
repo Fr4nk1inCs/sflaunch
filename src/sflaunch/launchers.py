@@ -1,6 +1,5 @@
-import os
+import subprocess
 from functools import partial
-from multiprocessing import Process
 from typing import List, Protocol
 
 from libtmux import Session
@@ -25,25 +24,36 @@ def tmux_launcher(command: str, rank: int, *, session: Session) -> None:
     window.rename_window(f"rank-{rank}")
 
 
-_processes_to_join: List[Process] = []
+_processes_to_join: List[subprocess.Popen] = []
 
 
 def process_launcher(command: str, rank: int, *, daemon: bool = False) -> None:
-    process = Process(target=lambda: os.system(f"{command} {rank}"))
-    process.daemon = daemon
-    process.start()
+    full_command = f"{command} {rank}"
+    if daemon:
+        process = subprocess.Popen(
+            full_command,
+            shell=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+            close_fds=True,
+        )
+        logger.info("Detached rank %d as pid %d", rank, process.pid)
+        return
 
-    if not daemon:
-        global _processes_to_join
-        _processes_to_join.append(process)
+    process = subprocess.Popen(full_command, shell=True)
+    global _processes_to_join
+    _processes_to_join.append(process)
 
 
-def make_launcher(try_use_tmux: bool = False, daemon: bool = False) -> Launcher:
-    if try_use_tmux:
+def make_launcher(tmux: bool = False, daemon: bool = False) -> Launcher:
+    if tmux:
         session = get_session()
-        if session is not None:
-            logger.info("Using tmux launcher.")
-            return partial(tmux_launcher, session=session)
+        if session is None:
+            raise RuntimeError("tmux launcher requested but no tmux session detected")
+        logger.info("Using tmux launcher.")
+        return partial(tmux_launcher, session=session)
     logger.info("Using process launcher.")
     return partial(process_launcher, daemon=daemon)
 
@@ -54,4 +64,4 @@ def join_launched() -> None:
         return
     logger.info("Waiting for launched processes to finish...")
     for process in _processes_to_join:
-        process.join()
+        process.wait()

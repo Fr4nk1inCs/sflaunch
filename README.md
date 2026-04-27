@@ -22,13 +22,20 @@ sf-megarun --cluster cluster.yaml --pretrain megatron.yaml
 |------|-------|---------|-------------|
 | `--cluster` | `-c` | required | Path to cluster config YAML |
 | `--pretrain` | `-p`, `-m` | required | Path to Megatron-LM job config YAML |
-| `--port` | | `29500` | Master node port for distributed communication |
+| `--port` | | random in `[30000, 49999]` | Master node port for distributed communication |
 | `--nnodes` | | cluster default | Override number of nodes (must not exceed nodes in cluster config) |
-| `--nproc-per-node` | | cluster default | Override GPUs per node |
-| `--tmux` / `--no-tmux` | | `--tmux` | Open each rank in a tmux window (requires an active tmux session) |
+| `--nproc-per-node` | | cluster default | Override GPUs per node (must not exceed each node's `num_gpus`) |
+| `--tmux` / `--no-tmux` | | auto-detected | Open each rank in a tmux window. Defaults to true iff `$TMUX` is set; passing `--tmux` outside a tmux session fails fast |
+| `--daemon` / `--no-daemon` | | `--no-daemon` | When `--no-tmux` is set, detach launched SSH processes so they survive `sf-megarun` exiting. Mutually exclusive with `--tmux` |
 | `--log-level` | | `INFO` | Logging level |
 
-When `--tmux` is active and a tmux session is detected, each node rank is launched in a separate tmux window named `rank-<N>`. Otherwise, each rank is launched as a subprocess.
+Launch modes:
+
+- **tmux** (default inside tmux): each rank opens in its own tmux window named `rank-<N>`. Closes on key press after the run.
+- **process, foreground** (`--no-tmux`): each rank is a subprocess; `sf-megarun` blocks until all of them exit.
+- **process, daemon** (`--no-tmux --daemon`): each rank is detached into its own session; `sf-megarun` exits immediately and the SSH/training processes keep running.
+
+Heterogeneous clusters (nodes with different `num_gpus`) are rejected — torchrun requires a uniform `--nproc_per_node`. Pin a value with `--nproc-per-node` if needed.
 
 ### Cluster config
 

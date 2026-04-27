@@ -1,8 +1,11 @@
+import shlex
 from typing import Dict, List
 
 
 def fmt_env_vars(env_vars: Dict[str, str]) -> str:
-    return "\n".join(f"export {key}='{value}'" for key, value in env_vars.items())
+    return "\n".join(
+        f"export {key}={shlex.quote(value)}" for key, value in env_vars.items()
+    )
 
 
 def argv2cmd(arg0: str | None, argv: List[str], indent: int = 0) -> str:
